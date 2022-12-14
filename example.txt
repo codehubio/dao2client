@@ -1,0 +1,36 @@
+
+proposal id must be 8-char and unique
+
+1. create dao: 
+  ./dao.sh create-proposal description=3 name=2 id=0011223300112237
+
+2. add step: 
+  ./dao.sh add-step  proposalId=0011223300112237 incentiveRate=10 description=3 name=2  amount=3000 sender=6EbhsCu7nDMRYGNXkBNBtcx1gubjrUfR8aQ2ZfPzg2Ur receiver=H2knp7o4asKD79eo1PSPAFcahqAXgk6eQUkCcmAExXFU token=988Hp2QxjbcZu3vgy78CRsNhxnS46YG4nubbYeePgoxa executeAfter=1000
+
+3. get info 
+  ./dao.sh get-proposal-by-id proposalId=0011223300112237
+
+4. settle proposal - after this cmd, step cannot be added any more.
+  ./dao.sh settle-proposal proposalId=0011223300112237
+
+5. approve step - only after proposal is settled and not yet finalized (approved or rejected), and step not finalized (rejected/approved)
+  if all steps were approved, proposal automatically changed to approved.
+  after this steps, fund is sent from sender to vault and locked, amount = 1000 + 1000 * (incentive_rate = 10) / 100000
+  ./dao.sh approve-step proposalId=0011223300112237 stepIndex=2
+
+6. reject step - only after proposal is settled and not yet finalized (approved or rejected), and step not finalized (rejected/approved)
+  after this cmd, proposal is rejected
+  ./dao.sh reject-step proposalId=0011223300112237 stepIndex=1 reason=scam
+
+7. execute step - only proposal is approved
+  after this steps, fund is sent from vautl to receiver and caller: 
+  1000 sent to receiver, and caller get 1000 * (incentive_rate = 10) / 100000;
+  ./dao.sh reject-step proposalId=0011223300112237 stepIndex=2
+
+8. revert step - only proposal is rejected or expired (not finalized after expireOrFinalizeAfter) and step is approved not rerverted
+  after this steps, fund is sent from vautl to sender
+  1000 sent to sender, and caller get 1000 * (incentive_rate = 10) / 100000;
+  ./dao.sh revert-step proposalId=0011223300112237 stepIndex=2 approvalIndex=1
+
+
+NOTE: 7 and 8 is incentivized to callers by paying them a small fee ()
