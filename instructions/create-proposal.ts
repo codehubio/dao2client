@@ -5,17 +5,16 @@ import { CreateProposalIns } from '../serde/instructions/create-proposal';
 import {
   pad
 } from '../services/util.service';
+import { getStatByAddress } from '../state/stat';
 const log = debug('create-proposal:info');
 export default async function createProposal(
   connection: Connection,
   creator: PublicKey,
   {
     name,
-    id,
     description,
     expireOrFinalizeAfter,
   }: {
-    id: string,
     name: string,
     description: string,
     expireOrFinalizeAfter: number,
@@ -26,17 +25,30 @@ export default async function createProposal(
   } = process.env;
   const newName = pad(name, 16);
   const newDescription= pad(description, 256);
-
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(id),
+  const [statPda] = PublicKey.findProgramAddressSync([
+    creator.toBuffer(),
+    Buffer.from('stat'),
+  ], new PublicKey(SC_ADDRESS));
+  log(`Stat PDA: ${statPda}`);
+  let numberOfProposals = new BN(0);
+  try {
+    const {
+      data: statData,
+    } = await getStatByAddress(connection, creator.toBase58());
+    numberOfProposals = statData.numberOfProposals;
+  } catch (error) {
+    
+  }
+  const [proposalPda] = PublicKey.findProgramAddressSync([
+    Buffer.from(numberOfProposals.toString()),
+    creator.toBuffer(),
     Buffer.from('proposal'),
   ], new PublicKey(SC_ADDRESS));
-  log(`Dao PDA: ${pda}`);
+  log(`Proposal PDA: ${proposalPda}`);
   const createDaoIx = new CreateProposalIns({
     name: Buffer.from(newName),
     description: Buffer.from(newDescription),
     expireOrFinalizedAfter: new BN(expireOrFinalizeAfter).divRound(new BN(1000)),
-    id: Buffer.from(id),
   });
   const serializedData = createDaoIx.serialize();
   const dataBuffer = Buffer.from(serializedData);
@@ -49,7 +61,11 @@ export default async function createProposal(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
+    }, {
+      isSigner: false,
+      isWritable: true,
+      pubkey: statPda,
     }, {
       isSigner: false,
       isWritable: false,

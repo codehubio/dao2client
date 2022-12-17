@@ -17,19 +17,19 @@ PARAMETERS="";
 if [ $ACTION == "create-proposal" ]; then
    PARAMETERS="id=$id name=$name description=$description expireOrFinalizeAfter=$expireOrFinalizeAfter"
 elif [ $ACTION == "add-step" ]; then
-   PARAMETERS="incentiveRate=$incentiveRate name=$name description=$description amount=$amount sender=$sender receiver=$receiver token=$token executeAfter=$executeAfter proposalId=$proposalId"
-elif [ $ACTION == "get-proposal-by-id" ]; then
-   PARAMETERS="proposalId=$proposalId"
+   PARAMETERS="incentiveRate=$incentiveRate name=$name description=$description amount=$amount sender=$sender receiver=$receiver token=$token executeAfter=$executeAfter proposalPda=$proposalPda"
+elif [ $ACTION == "get-proposal-by-pda" ]; then
+   PARAMETERS="proposalPda=$proposalPda"
 elif [ $ACTION == "settle-proposal" ]; then
-   PARAMETERS="proposalId=$proposalId"
+   PARAMETERS="proposalPda=$proposalPda"
 elif [ $ACTION == "approve-step" ]; then
-   PARAMETERS="proposalId=$proposalId stepIndex=${stepIndex} approvedAmount=${approvedAmount}"
+   PARAMETERS="proposalPda=$proposalPda stepIndex=${stepIndex} approvedAmount=${approvedAmount}"
 elif [ $ACTION == "reject-step" ]; then
-   PARAMETERS="proposalId=$proposalId stepIndex=${stepIndex} reason=${reason}"
+   PARAMETERS="proposalPda=$proposalPda stepIndex=${stepIndex} reason=${reason}"
 elif [ $ACTION == "execute-step" ]; then
-   PARAMETERS="proposalId=$proposalId stepIndex=${stepIndex}"
+   PARAMETERS="proposalPda=$proposalPda stepIndex=${stepIndex}"
 elif [ $ACTION == "revert-step" ]; then
-   PARAMETERS="proposalId=$proposalId stepIndex=${stepIndex} approvalIndex=${approvalIndex}"
+   PARAMETERS="proposalPda=$proposalPda stepIndex=${stepIndex} approvalIndex=${approvalIndex}"
 fi
 echo "run $1 with $PARAMETERS"
 export DEBUG=*&&$TS_NODE ./cli/$ACTION $PARAMETERS 

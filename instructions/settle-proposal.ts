@@ -1,25 +1,22 @@
 import debug from 'debug';
 import { Connection, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage } from "@solana/web3.js";
 import { SettleProposalIns } from '../serde/instructions/settle-proposal';
+import BN from 'bn.js';
 const log = debug('settle-proposal:info');
 export default async function settleProposal(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
   }: {
-    proposalId: string,
+    proposalPda: PublicKey,
   },
 ) {
   const {
     SC_ADDRESS = ''
   } = process.env;
 
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(proposalId),
-    Buffer.from('proposal'),
-  ], new PublicKey(SC_ADDRESS));
-  log(`Dao PDA: ${pda}`);
+  log(`Proposa PDA: ${proposalPda}`);
   const initPoolIx = new SettleProposalIns();
   const serializedData = initPoolIx.serialize();
   const dataBuffer = Buffer.from(serializedData);
@@ -32,7 +29,7 @@ export default async function settleProposal(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: false,

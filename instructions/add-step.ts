@@ -5,13 +5,13 @@ import { AddStepIns } from '../serde/instructions/add-step';
 import {
   pad
 } from '../services/util.service';
-import { getProposalById } from '../state/dao';
+import { getProposalByPda } from '../state/proposal';
 const log = debug('add-step:info');
 export default async function addStep(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
     name,
     description,
     amount,
@@ -21,7 +21,7 @@ export default async function addStep(
     executeAfter,
     incentiveRate,
   }: {
-    proposalId: string,
+    proposalPda: PublicKey,
     name: string,
     description: string,
     amount: number,
@@ -38,17 +38,16 @@ export default async function addStep(
   const newName = pad(name, 16);
   const newDescription= pad(description, 128);
   const {
-    data: daoData,
-    pda: daoPda
-  } = await getProposalById(connection, proposalId);
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(daoData.numberOfSteps.add(new BN(1)).toString()),
-    Buffer.from(proposalId),
+    data: proposalData,
+  } = await getProposalByPda(connection, proposalPda);
+  
+  const [stepPda] = PublicKey.findProgramAddressSync([
+    Buffer.from(proposalData.numberOfSteps.toString()),
+    proposalPda.toBytes(),
     Buffer.from('step'),
   ], new PublicKey(SC_ADDRESS));
-  log(`Adding step ${pda} to dao id: ${Buffer.from(daoData.id).toString()}, pda: ${daoPda.toBase58()}`);
+  log(`Adding step ${stepPda} to dao id: ${Buffer.from(proposalData.name).toString()}, pda: ${proposalPda.toBase58()}`);
   const addStepIx = new AddStepIns({
-    proposalId: Buffer.from(proposalId),
     name: Buffer.from(newName),
     description: Buffer.from(newDescription),
     amount: new BN(amount),
@@ -69,11 +68,11 @@ export default async function addStep(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: daoPda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: stepPda,
     }, {
       isSigner: false,
       isWritable: false,

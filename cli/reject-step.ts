@@ -1,8 +1,9 @@
 import * as dotenv from 'dotenv';
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import rejectStep from '../instructions/reject-step';
 import { sendTransactionWithMainWallet } from '../services/tx.service';
 import { getMainWallet } from '../services/util.service';
+import BN from 'bn.js';
 dotenv.config()
 const {
   RPC_ENDPOINT = '',
@@ -18,8 +19,11 @@ async function run() {
   const connection = new Connection(RPC_ENDPOINT);
   const tx = await rejectStep(
     connection,
-    signer.publicKey,
-    params
+    signer.publicKey, {
+      ...params,
+      proposalPda: new PublicKey(params.proposalPda),
+      stepIndex: new BN(params.stepIndex),
+    }
   );
   return sendTransactionWithMainWallet(connection, tx);
 }

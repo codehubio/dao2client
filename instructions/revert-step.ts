@@ -3,38 +3,35 @@ import { Connection, PublicKey, SystemProgram, TransactionInstruction, Transacti
 import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Step } from '../serde/states/step';
 import { RevertStepIns } from '../serde/instructions/revert-step';
+import BN from 'bn.js';
 const log = debug('settle-proposal:info');
 export default async function approveStep(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
     stepIndex,
-    approvalIndex = 1,
+    approvalIndex = new BN(0),
   }: {
-    proposalId: string,
-    stepIndex: number,
-    approvalIndex: number
+    proposalPda: PublicKey,
+    stepIndex: BN,
+    approvalIndex: BN
   },
 ) {
   const {
     SC_ADDRESS = ''
   } = process.env;
 
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(proposalId),
-    Buffer.from('proposal'),
-  ], new PublicKey(SC_ADDRESS));
+
   const [stepPda] = PublicKey.findProgramAddressSync([
     Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    proposalPda.toBuffer(),
     Buffer.from('step'),
   ], new PublicKey(SC_ADDRESS));
   log(`Getting step data from ${stepPda}`);
   const [approvalPda] = PublicKey.findProgramAddressSync([
     Buffer.from(approvalIndex.toString()),
-    Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    stepPda.toBuffer(),
     Buffer.from('approval'),
   ], new PublicKey(SC_ADDRESS));
   const stepAccountInfo = await connection.getAccountInfo(stepPda);
@@ -49,7 +46,7 @@ export default async function approveStep(
   log(`Reverting sending ${amount.toNumber()} of ${tokenPubKey.toBase58()} to ${senderPubKey.toBase58()}`);
   const srcAta = await getAssociatedTokenAddress(
     tokenPubKey,
-    pda,
+    proposalPda,
     true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -68,7 +65,7 @@ export default async function approveStep(
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
-  log(`Dao PDA: ${pda}`);
+  log(`Proposal PDA: ${proposalPda}`);
   log(`Step PDA: ${stepPda}`);
   const revertStepIx = new RevertStepIns();
   const serializedData = revertStepIx.serialize();
@@ -86,7 +83,7 @@ export default async function approveStep(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: true,

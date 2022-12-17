@@ -2,7 +2,6 @@ import BN from 'bn.js';
 import * as borsh from 'borsh';
 
 export type TAddStepInstruction = {
-  proposalId: Uint8Array,
   name: Uint8Array,
   description: Uint8Array,
   amount: BN,
@@ -14,8 +13,6 @@ export type TAddStepInstruction = {
 }
 export class AddStepIns {
   instruction;
-  
-  proposalId;
   
   name;
   
@@ -35,7 +32,6 @@ export class AddStepIns {
   
   constructor(fields: TAddStepInstruction) {
     this.instruction = 2;
-    this.proposalId = fields.proposalId;
     this.name = fields.name;
     this.description = fields.description;
     this.amount = fields.amount;
@@ -56,7 +52,6 @@ export const AddStepInstructionSchema = new Map([[AddStepIns, {
   kind: 'struct',
   fields: [
     ['instruction', 'u8'],
-    ['proposalId', [16]],
     ['name', [16]],
     ['description', [128]],
     ['amount', 'u64'],

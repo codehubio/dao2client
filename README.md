@@ -113,6 +113,7 @@ Revert of a transaction means reverting all of its approvals.
 
 Devnet address: *FHQLyQrTkgbpH42ukPExb6i1L22Wbm3vcaKLc8FiwFsp*
 
+- ts-node installed
 
 - For now, only cli is supported (will add more fancy UI in future)
 
@@ -146,7 +147,7 @@ Devnet address: *FHQLyQrTkgbpH42ukPExb6i1L22Wbm3vcaKLc8FiwFsp*
 
 
   ```js
-  ./dao.sh create-proposal description=put_description name=put_name expireOrFinalizeAfter=duration id=0011223300112237
+  ./dao.sh create-proposal description=put_description name=put_name expireOrFinalizeAfter=duration id=id
   ```
   - `id`: a globally unique id must be provided (16 chars fixed)
   
@@ -154,7 +155,7 @@ Devnet address: *FHQLyQrTkgbpH42ukPExb6i1L22Wbm3vcaKLc8FiwFsp*
   
   - `description`: Description of the proposal (128 char max)
   
-  - `expireOrFinalizeAfter`: How long in seconds would the proposal last if it is not finalized (approved or rejected). If the proposal is rejected or approved, this field can be ignored in further logic
+  - `expireOrFinalizeAfter`: How long in seconds would the proposal last if it is not finalized (approved or rejected). If the proposal is rejected or approved, this field can be ignored in further logic. Exception: 0 means everlasting.
   
 
   After a proposal being created, transactions can be added to the proposal by its creator.
@@ -304,4 +305,47 @@ Devnet address: *FHQLyQrTkgbpH42ukPExb6i1L22Wbm3vcaKLc8FiwFsp*
 
   
   - `proposalId`: id of the proposal to get
+
+
+
+
+
+## XIII. Examples
+
+wallet A: `H2knp7o4asKD79eo1PSPAFcahqAXgk6eQUkCcmAExXFU`
+
+wallet B: `6EbhsCu7nDMRYGNXkBNBtcx1gubjrUfR8aQ2ZfPzg2Ur`
+
+wallet C: `8faJtmpFTpLeFz8TfCJyjJyaTo92Sw1Q913VRnCLzavi`
+
+
+**Please choose another proposal id to test**
+
+1. Happy path
+
+a) wallet A creates a proposal
+
+cmd: `./dao.sh create-proposal description=test_desc name=test_name id=0011223300112252 expireOrFinalizeAfter=0`
+
+txid: `4rioHZyLL8LDHoVNoQ4tsbZDbm9ymyJ7LEwi7CnATmFtKMvn3DZkGbeoMWMnmFPAkw5AD9zH7CqY7EqGNwaMkKq2`
+
+
+b) wallet A adds 3 tx
+
+cmd1: `./dao.sh add-step  proposalId=0011223300112252 incentiveRate=100 description=desc_1 name=desc_1  amount=1000 sender=6EbhsCu7nDMRYGNXkBNBtcx1gubjrUfR8aQ2ZfPzg2Ur receiver=H2knp7o4asKD79eo1PSPAFcahqAXgk6eQUkCcmAExXFU token=988Hp2QxjbcZu3vgy78CRsNhxnS46YG4nubbYeePgoxa executeAfter=1000`
+
+txid1: `M3xFRFDqkKebbNX5Ddq3LyvPCBoffw8a3VNzYkqfcQQpuN7W97Xz3dySzVk5Jcg4eV4qfvSZCqwxDXYe8AYEKp4`
+
+cmd2: `./dao.sh add-step  proposalId=0011223300112252 incentiveRate=10 description=desc_2 name=desc_2  amount=2 sender=11111111111111111111111111111111 receiver=6EbhsCu7nDMRYGNXkBNBtcx1gubjrUfR8aQ2ZfPzg2Ur token=11111111111111111111111111111111 executeAfter=0`
+
+txid2: `5L38WgJZKTiUtQXrZSAo3B2YRRLTs34Bu4g3Bpy5SjWd3veyYm7xBtmqybf99uQoP6J8hGxCf2h19YSpDA17ptgC`
+
+cmd1: `./dao.sh add-step  proposalId=0011223300112252 incentiveRate=100 description=desc_1 name=desc_1  amount=1000 sender=6EbhsCu7nDMRYGNXkBNBtcx1gubjrUfR8aQ2ZfPzg2Ur receiver=H2knp7o4asKD79eo1PSPAFcahqAXgk6eQUkCcmAExXFU token=988Hp2QxjbcZu3vgy78CRsNhxnS46YG4nubbYeePgoxa executeAfter=1000`
+
+txid: `M3xFRFDqkKebbNX5Ddq3LyvPCBoffw8a3VNzYkqfcQQpuN7W97Xz3dySzVk5Jcg4eV4qfvSZCqwxDXYe8AYEKp4`
+
+
+
+
+
 

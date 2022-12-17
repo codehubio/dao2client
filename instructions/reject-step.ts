@@ -7,11 +7,11 @@ export default async function rejectStep(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
     stepIndex,
     reason = '',
   }: {
-    proposalId: string,
+    proposalPda: PublicKey,
     stepIndex: number,
     reason: string
   },
@@ -20,16 +20,12 @@ export default async function rejectStep(
     SC_ADDRESS = ''
   } = process.env;
 
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(proposalId),
-    Buffer.from('proposal'),
-  ], new PublicKey(SC_ADDRESS));
   const [stepPda] = PublicKey.findProgramAddressSync([
     Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    proposalPda.toBuffer(),
     Buffer.from('step'),
   ], new PublicKey(SC_ADDRESS));
-  log(`Dao PDA: ${pda}`);
+  log(`Proposal PDA: ${proposalPda}`);
   log(`Step PDA: ${stepPda}`);
   const rejectStepIx = new RejectStepIns({
     reason: pad(reason, 128),
@@ -45,7 +41,7 @@ export default async function rejectStep(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: true,

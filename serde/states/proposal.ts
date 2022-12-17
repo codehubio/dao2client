@@ -2,12 +2,12 @@ import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import * as borsh from 'borsh';
 
-export type TDao = {
+export type TProposal = {
   accountType: number,
-  id: Uint8Array,
+  index: BN,
   name: Uint8Array,
   numberOfSteps: BN,
-  numberOfApproval: BN,
+  numberOfApprovals: BN,
   description: Uint8Array,
   createdAt: BN,
   expireOrFinalizeAfter: BN,
@@ -19,16 +19,16 @@ export type TDao = {
   isRejected: number,
   rejectedAt: BN,
 }
-export class Dao {
+export class Proposal {
   accountType;
   
-  id
+  index;
 
   name;
 
   numberOfSteps;
   
-  numberOfApproval;
+  numberOfApprovals;
   
   createdAt;
   
@@ -50,12 +50,12 @@ export class Dao {
 
   rejectedAt;
   
-  constructor(fields: TDao) {
+  constructor(fields: TProposal) {
     this.accountType = fields.accountType;
-    this.id = fields.id
+    this.index = fields.index;
     this.name = fields.name;
     this.numberOfSteps = fields.numberOfSteps;
-    this.numberOfApproval = fields.numberOfApproval;
+    this.numberOfApprovals = fields.numberOfApprovals;
     this.expireOrFinalizeAfter = fields.expireOrFinalizeAfter;
     this.creator = fields.creator;
     this.description = fields.description;
@@ -69,19 +69,19 @@ export class Dao {
   }
 
   serialize(): Uint8Array {
-    return borsh.serialize(DaoSchema, this);
+    return borsh.serialize(ProposalSchema, this);
   }
 
-  static deserialize(raw: Buffer): Dao {
-    return borsh.deserialize(DaoSchema, Dao, raw);
+  static deserialize(raw: Buffer): Proposal {
+    return borsh.deserialize(ProposalSchema, Proposal, raw);
   }
   static deserializeToReadable(raw: Buffer): any {
     const {
       accountType,
-      id,
+      index,
       name,
       numberOfSteps,
-      numberOfApproval,
+      numberOfApprovals,
       createdAt,
       expireOrFinalizeAfter,
       isApproved,
@@ -92,13 +92,13 @@ export class Dao {
       isRejected,
       rejectedAt,
       description,
-    } = Dao.deserialize(raw);
+    } = Proposal.deserialize(raw);
     return {
       accountType,
-      id: Buffer.from(id).toString(),
+      index: index.toNumber(),
       name: Buffer.from(name).toString(),
       numberOfSteps: numberOfSteps.toNumber(),
-      numberOfApproval: numberOfApproval.toNumber(),
+      numberOfApprovals: numberOfApprovals.toNumber(),
       createdAt: new Date(createdAt.toNumber() * 1000),
       expireOrFinalizeAfter: new Date(expireOrFinalizeAfter.toNumber() * 1000),
       isApproved,
@@ -113,14 +113,14 @@ export class Dao {
   }
 }
 
-export const DaoSchema = new Map([[Dao, {
+export const ProposalSchema = new Map([[Proposal, {
   kind: 'struct',
   fields: [
     ['accountType', 'u8'],
-    ['id', [16]],
+    ['index', 'u64'],
     ['name', [16]],
     ['numberOfSteps', 'u64'],
-    ['numberOfApproval', 'u64'],
+    ['numberOfApprovals', 'u64'],
     ['description', [256]],
     ['createdAt', 'u64'],
     ['expireOrFinalizeAfter', 'u64'],

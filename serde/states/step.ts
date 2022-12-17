@@ -6,7 +6,6 @@ export type TStep = {
   accountType: number,
   index: BN,
   proposalPda: Uint8Array,
-  proposalId: Uint8Array,
   name: Uint8Array,
   description: Uint8Array,
   amount: BN,
@@ -36,8 +35,6 @@ export class Step {
   index;
   
   proposalPda;
-  
-  proposalId;
   
   name;
   
@@ -88,7 +85,6 @@ export class Step {
     this.accountType = fields.accountType;
     this.index = fields.index;
     this.proposalPda = fields.proposalPda;
-    this.proposalId = fields.proposalId;
     this.name = fields.name;
     this.description = fields.description;
     this.amount = fields.amount;
@@ -125,7 +121,6 @@ export class Step {
       accountType,
       index,
       proposalPda,
-      proposalId,
       name,
       description,
       amount,
@@ -156,7 +151,6 @@ export class Step {
       receivedAmount: receivedAmount.toNumber(),
       revertedAmount: revertedAmount.toNumber(),
       numberOfApprovals: numberOfApprovals.toNumber(),
-      proposalId: Buffer.from(proposalId).toString(),
       rejectedReason: Buffer.from(rejectedReason).toString(),
       name: Buffer.from(name).toString(),
       description: Buffer.from(description).toString(),
@@ -187,7 +181,6 @@ export const StepSchema = new Map([[Step, {
     ['accountType', 'u8'],
     ['index', 'u64'],
     ['proposalPda', [32]],
-    ['proposalId', [16]],
     ['name', [16]],
     ['description', [128]],
     ['amount', 'u64'],

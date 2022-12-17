@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import settleProposal from '../instructions/settle-proposal';
 import { sendTransactionWithMainWallet } from '../services/tx.service';
 import { getMainWallet } from '../services/util.service';
@@ -18,8 +18,10 @@ async function run() {
   const connection = new Connection(RPC_ENDPOINT);
   const tx = await settleProposal(
     connection,
-    signer.publicKey,
-    params
+    signer.publicKey, {
+      ...params,
+      proposalPda: new PublicKey(params.proposalPda)
+    }
   );
   return sendTransactionWithMainWallet(connection, tx);
 }

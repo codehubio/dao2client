@@ -4,17 +4,17 @@ import { ApproveStepIns } from '../serde/instructions/approve-step';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Step } from '../serde/states/step';
 import BN from 'bn.js';
-const log = debug('settle-proposal:info');
+const log = debug('approve-step:info');
 export default async function approveStep(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
     stepIndex,
     approvedAmount,
   }: {
-    proposalId: string,
-    stepIndex: number,
+    proposalPda: PublicKey,
+    stepIndex: BN,
     approvedAmount: BN,
   },
 ) {
@@ -22,23 +22,18 @@ export default async function approveStep(
     SC_ADDRESS = ''
   } = process.env;
 
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(proposalId),
-    Buffer.from('proposal'),
-  ], new PublicKey(SC_ADDRESS));
+  
   const [stepPda] = PublicKey.findProgramAddressSync([
     Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    proposalPda.toBuffer(),
     Buffer.from('step'),
   ], new PublicKey(SC_ADDRESS));
-  
   log(`Getting step data from ${stepPda}`);
   const stepAccountInfo = await connection.getAccountInfo(stepPda);
   const stepData = Step.deserialize(stepAccountInfo?.data as Buffer);
   const [approvalPda] = PublicKey.findProgramAddressSync([
     Buffer.from(stepData.numberOfApprovals.toString()),
-    Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    stepPda.toBuffer(),
     Buffer.from('approval'),
   ], new PublicKey(SC_ADDRESS));
   const {
@@ -58,12 +53,12 @@ export default async function approveStep(
   );
   const dstAta = await getAssociatedTokenAddress(
     tokenPubKey,
-    pda,
+    proposalPda,
     true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
-  log(`Dao PDA: ${pda}`);
+  log(`Proposal PDA: ${proposalPda}`);
   log(`Step PDA: ${stepPda}`);
   const initPoolIx = new ApproveStepIns({ approvedAmount });
   const serializedData = initPoolIx.serialize();
@@ -77,7 +72,7 @@ export default async function approveStep(
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: true,

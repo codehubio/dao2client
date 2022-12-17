@@ -8,10 +8,10 @@ export default async function approveStep(
   connection: Connection,
   creator: PublicKey,
   {
-    proposalId,
+    proposalPda,
     stepIndex,
   }: {
-    proposalId: string,
+    proposalPda: PublicKey,
     stepIndex: number,
   },
 ) {
@@ -19,13 +19,9 @@ export default async function approveStep(
     SC_ADDRESS = ''
   } = process.env;
 
-  const [pda] = PublicKey.findProgramAddressSync([
-    Buffer.from(proposalId),
-    Buffer.from('proposal'),
-  ], new PublicKey(SC_ADDRESS));
   const [stepPda] = PublicKey.findProgramAddressSync([
     Buffer.from(stepIndex.toString()),
-    Buffer.from(proposalId),
+    proposalPda.toBuffer(),
     Buffer.from('step'),
   ], new PublicKey(SC_ADDRESS));
   log(`Getting step data from ${stepPda}`);
@@ -41,7 +37,7 @@ export default async function approveStep(
   log(`Executing sending ${amount.toNumber()} of ${tokenPubKey.toBase58()} to ${receiverPubKey.toBase58()}`);
   const srcAta = await getAssociatedTokenAddress(
     tokenPubKey,
-    pda,
+    proposalPda,
     true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -60,7 +56,7 @@ export default async function approveStep(
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
-  log(`Dao PDA: ${pda}`);
+  log(`Proposal PDA: ${proposalPda}`);
   log(`Step PDA: ${stepPda}`);
   const executeStepIx = new ExecuteStepIns();
   const serializedData = executeStepIx.serialize();
@@ -74,11 +70,11 @@ export default async function approveStep(
     }, {
       pubkey: receiverPubKey,
       isSigner: false,
-      isWritable: false,
+      isWritable: true,
     }, {
       isSigner: false,
       isWritable: true,
-      pubkey: pda,
+      pubkey: proposalPda,
     }, {
       isSigner: false,
       isWritable: true,

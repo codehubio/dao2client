@@ -2,13 +2,11 @@ import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import * as borsh from 'borsh';
 
-export type TStep = {
+export type TApproval = {
   accountType: number,
   index: BN,
   proposalPda: Uint8Array,
-  proposalId: Uint8Array,
   stepPda: Uint8Array,
-  stepIndex: BN,
   approvedAmount: BN,
   sender: BN,
   isReverted: number,
@@ -24,11 +22,7 @@ export class Approval {
 
   proposalPda;
 
-  proposalId;
-
   stepPda;
-
-  stepIndex;
 
   approvedAmount;
 
@@ -44,13 +38,11 @@ export class Approval {
 
   incentiveRate;
 
-  constructor(fields: TStep) {
+  constructor(fields: TApproval) {
     this.accountType = fields.accountType;
     this.index = fields.index;
     this.proposalPda = fields.proposalPda;
-    this.proposalId = fields.proposalId;
     this.stepPda = fields.stepPda;
-    this.stepIndex = fields.stepIndex;
     this.approvedAmount = fields.approvedAmount;
     this.sender = fields.sender;
     this.isReverted = fields.isReverted;
@@ -73,9 +65,7 @@ export class Approval {
       accountType,
       index,
       proposalPda,
-      proposalId,
       stepPda,
-      stepIndex,
       approvedAmount,
       sender,
       isReverted,
@@ -87,11 +77,9 @@ export class Approval {
     return {
       accountType,
       index: index.toNumber(),
-      stepIndex: stepIndex.toNumber(),
       incentiveRate: incentiveRate.toNumber(),
       incentiveFee: incentiveFee.toNumber(),
       approvedAmount: approvedAmount.toNumber(),
-      proposalId: Buffer.from(proposalId).toString(),
       proposalPda: new PublicKey(proposalPda).toBase58(),
       stepPda: new PublicKey(stepPda).toBase58(),
       sender: new PublicKey(sender).toBase58(),
@@ -108,8 +96,6 @@ export const ApprovalSchema = new Map([[Approval, {
     ['accountType', 'u8'],
     ['index', 'u64'],
     ['proposalPda', [32]],
-    ['proposalId', [16]],
-    ['stepIndex', 'u64'],
     ['stepPda', [32]],
     ['approvedAmount', 'u64'],
     ['incentiveFee', 'u64'],
